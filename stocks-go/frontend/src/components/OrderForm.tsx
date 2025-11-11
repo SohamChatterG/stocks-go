@@ -10,7 +10,7 @@ interface OrderFormData {
     side: string;
     orderType: 'market' | 'limit';
     quantity: number;
-    price: number;
+    price?: number; // only for limit orders
 }
 
 const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated }) => {
@@ -19,7 +19,6 @@ const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated }) => {
         side: 'buy',
         orderType: 'market',
         quantity: 1,
-        price: 150.00,
     });
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<{ type: string; text: string }>({ type: '', text: '' });
@@ -40,7 +39,16 @@ const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated }) => {
         setLoading(true);
 
         try {
-            await axios.post('/api/orders', formData);
+            const payload: any = {
+                symbol: formData.symbol,
+                side: formData.side,
+                orderType: formData.orderType,
+                quantity: formData.quantity,
+            };
+            if (formData.orderType === 'limit') {
+                payload.price = Math.round((formData.price || 0) * 100) / 100;
+            }
+            await axios.post('/api/orders', payload);
             setMessage({ type: 'success', text: 'Order created successfully!' });
 
             // Reset form
@@ -49,7 +57,6 @@ const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated }) => {
                 side: 'buy',
                 orderType: 'market',
                 quantity: 1,
-                price: 150.00,
             });
 
             // Notify parent component
@@ -119,6 +126,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated }) => {
                             value={formData.quantity}
                             onChange={handleChange}
                             min="1"
+                            step={1}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             required
                         />
@@ -126,19 +134,30 @@ const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated }) => {
 
                     <div>
                         <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
-                            Price ($)
+                            {formData.orderType === 'market' ? 'Price (Market)' : 'Limit Price ($)'}
                         </label>
-                        <input
-                            type="number"
-                            id="price"
-                            name="price"
-                            value={formData.price}
-                            onChange={handleChange}
-                            min="0.01"
-                            step="0.01"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            required
-                        />
+                        {formData.orderType === 'market' ? (
+                            <input
+                                type="text"
+                                id="price"
+                                name="price"
+                                value="-- market --"
+                                readOnly
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
+                            />
+                        ) : (
+                            <input
+                                type="number"
+                                id="price"
+                                name="price"
+                                value={formData.price || 0}
+                                onChange={handleChange}
+                                min="0.01"
+                                step="0.01"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                required
+                            />
+                        )}
                     </div>
                 </div>
 

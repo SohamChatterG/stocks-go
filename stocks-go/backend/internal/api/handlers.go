@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	ws "github.com/gorilla/websocket"
+    "strings"
 )
 
 var upgrader = ws.Upgrader{
@@ -183,35 +184,58 @@ func (h *Handlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Ensure account exists (handles server restarts wiping in-memory store)
+	if acc := h.storage.GetAccount(username); acc == nil {
+		log.Printf("CreateOrder: Auto-creating missing account for user=%s (likely server restart)", username)
+		h.storage.CreateAccount(username)
+	}
+
 	var req OrderRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Printf("CreateOrder: Failed to decode request body: %v", err)
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(map[string]string{"error": "Invalid request body"})
 		return
 	}
 
-	log.Printf("CreateOrder: User=%s, Request=%+v", username, req)
+	// Normalize inputs (be lenient on casing/whitespace)
+	req.Symbol = strings.ToUpper(strings.TrimSpace(req.Symbol))
+	req.Side = strings.ToLower(strings.TrimSpace(req.Side))
+	req.OrderType = strings.ToLower(strings.TrimSpace(req.OrderType))
+
+	log.Printf("CreateOrder: User=%s, Request(normalized)=%+v", username, req)
 
 	// Validate input
 	if req.Symbol == "" {
 		log.Println("CreateOrder: Symbol is required")
-		http.Error(w, "Symbol is required", http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(map[string]string{"error": "Symbol is required"})
 		return
 	}
 	if req.Side != "buy" && req.Side != "sell" {
-		http.Error(w, "Side must be 'buy' or 'sell'", http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(map[string]string{"error": "Side must be 'buy' or 'sell'"})
 		return
 	}
 	if req.OrderType != "market" && req.OrderType != "limit" {
-		http.Error(w, "OrderType must be 'market' or 'limit'", http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(map[string]string{"error": "OrderType must be 'market' or 'limit'"})
 		return
 	}
 	if req.Quantity <= 0 {
-		http.Error(w, "Quantity must be greater than 0", http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(map[string]string{"error": "Quantity must be greater than 0"})
 		return
 	}
 	if req.OrderType == "limit" && req.Price <= 0 {
-		http.Error(w, "Price must be greater than 0 for limit orders", http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(map[string]string{"error": "Price must be greater than 0 for limit orders"})
 		return
 	}
 
@@ -236,7 +260,9 @@ func (h *Handlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
 		return
 	}
 

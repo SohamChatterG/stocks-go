@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../api/axios';
 import { StockPrice } from '../types';
+import PriceChart from './PriceChart';
 
 interface StockDetailProps {
     symbol: string;
@@ -23,6 +24,12 @@ const StockDetail: React.FC<StockDetailProps> = ({ symbol, onClose, onOrderCreat
 
     useEffect(() => {
         fetchStockDetail();
+        // Prevent background scroll when modal is open
+        const prev = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = prev;
+        };
     }, [symbol]);
 
     const fetchStockDetail = async () => {
@@ -43,13 +50,17 @@ const StockDetail: React.FC<StockDetailProps> = ({ symbol, onClose, onOrderCreat
         setOrderLoading(true);
 
         try {
-            await axios.post('/api/orders', {
+            // Build payload and omit price for market orders
+            const payload: any = {
                 symbol,
                 side: orderForm.side,
                 orderType: orderForm.orderType,
                 quantity: orderForm.quantity,
-                price: orderForm.price,
-            });
+            };
+            if (orderForm.orderType === 'limit') {
+                payload.price = Math.round(orderForm.price * 100) / 100;
+            }
+            await axios.post('/api/orders', payload);
             setMessage({ type: 'success', text: 'Order placed successfully!' });
             onOrderCreated();
             setTimeout(() => {
@@ -130,8 +141,8 @@ const StockDetail: React.FC<StockDetailProps> = ({ symbol, onClose, onOrderCreat
                     </div>
                 </div>
 
-                <div className={`overflow-y-auto ${isMaximized ? 'h-[calc(100%-140px)]' : 'max-h-[calc(90vh-140px)]'}`}>
-                    <div className="p-6">
+                <div className={`overflow-y-auto ${isMaximized ? 'h-[calc(100%-180px)]' : 'max-h-[calc(90vh-180px)]'}`}>
+                    <div className="p-6 space-y-6">
                         {/* Message */}
                         {message.text && (
                             <div className={`mb-4 p-4 rounded-lg ${message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -139,6 +150,22 @@ const StockDetail: React.FC<StockDetailProps> = ({ symbol, onClose, onOrderCreat
                                 {message.text}
                             </div>
                         )}
+
+                        {/* Chart */}
+                        <div className="bg-white border-2 border-gray-200 rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-2">
+                                <h3 className="text-lg font-semibold text-gray-800">Price Chart</h3>
+                                <span className="text-xs text-gray-500">Last {stock.priceHistory?.length || 0} ticks</span>
+                            </div>
+                            <PriceChart
+                                data={stock.priceHistory || []}
+                                height={isMaximized ? 300 : 200}
+                                color={stock.change >= 0 ? '#16a34a' : '#dc2626'}
+                                showGradient
+                                axes
+                                tooltip
+                            />
+                        </div>
 
                         {/* Order Form */}
                         <div className="bg-white border-2 border-gray-200 rounded-lg p-6">
@@ -216,6 +243,7 @@ const StockDetail: React.FC<StockDetailProps> = ({ symbol, onClose, onOrderCreat
                                         <input
                                             type="number"
                                             min="1"
+                                            step={1}
                                             value={orderForm.quantity}
                                             onChange={(e) => setOrderForm({ ...orderForm, quantity: parseInt(e.target.value) })}
                                             required
@@ -227,18 +255,25 @@ const StockDetail: React.FC<StockDetailProps> = ({ symbol, onClose, onOrderCreat
                                         <label className="block text-sm font-semibold text-gray-700 mb-2">
                                             {orderForm.orderType === 'market' ? 'Price (Current)' : 'Limit Price'}
                                         </label>
-                                        <input
-                                            type="number"
-                                            step="0.01"
-                                            min="0.01"
-                                            value={orderForm.price}
-                                            onChange={(e) => setOrderForm({ ...orderForm, price: parseFloat(e.target.value) })}
-                                            required={orderForm.orderType === 'limit'}
-                                            disabled={orderForm.orderType === 'market'}
-                                            className={`w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none ${orderForm.orderType === 'market' ? 'bg-gray-100 cursor-not-allowed' : ''
-                                                }`}
-                                            placeholder={orderForm.orderType === 'market' ? 'Market Price' : 'Enter limit price'}
-                                        />
+                                        {orderForm.orderType === 'market' ? (
+                                            <input
+                                                type="text"
+                                                value={stock.price.toFixed(2)}
+                                                readOnly
+                                                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+                                            />
+                                        ) : (
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                min="0.01"
+                                                value={orderForm.price}
+                                                onChange={(e) => setOrderForm({ ...orderForm, price: parseFloat(e.target.value) })}
+                                                required
+                                                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                                                placeholder="Enter limit price"
+                                            />
+                                        )}
                                     </div>
                                 </div>
 
