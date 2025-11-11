@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from '../api/axios';
 import { Order, StockPrice } from '../types';
 
@@ -7,6 +8,7 @@ interface OrdersTableProps {
 }
 
 const OrdersTable: React.FC<OrdersTableProps> = ({ refreshTrigger }) => {
+    const navigate = useNavigate();
     const [orders, setOrders] = useState<Order[]>([]);
     const [stocks, setStocks] = useState<Record<string, StockPrice>>({});
     const [loading, setLoading] = useState(false);
@@ -84,7 +86,7 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ refreshTrigger }) => {
                     <select
                         value={filterSymbol}
                         onChange={(e) => setFilterSymbol(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="select-custom"
                     >
                         <option value="all">All Stocks</option>
                         {symbols.map(symbol => (
@@ -97,7 +99,7 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ refreshTrigger }) => {
                     <select
                         value={filterDate}
                         onChange={(e) => setFilterDate(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="select-custom"
                     >
                         <option value="all">All Dates</option>
                         {dates.map(date => (
@@ -110,7 +112,7 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ refreshTrigger }) => {
                     <select
                         value={filterStatus}
                         onChange={(e) => setFilterStatus(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="select-custom"
                     >
                         <option value="all">All Status</option>
                         <option value="pending">Pending</option>
@@ -161,8 +163,27 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ refreshTrigger }) => {
                             </tr>
                         ) : filteredOrders.length === 0 ? (
                             <tr>
-                                <td colSpan={7} className="px-6 py-4 text-center text-gray-600 dark:text-gray-300">
-                                    No orders found
+                                <td colSpan={7} className="px-6 py-12 text-center">
+                                    <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    <p className="text-gray-600 dark:text-gray-300 text-lg mb-2 font-semibold">No orders found</p>
+                                    <p className="text-gray-500 dark:text-gray-400 mb-6">
+                                        {filterSymbol !== 'all' || filterDate !== 'all' || filterStatus !== 'all'
+                                            ? 'Try adjusting your filters'
+                                            : 'Start trading to see your order history'}
+                                    </p>
+                                    {filterSymbol === 'all' && filterDate === 'all' && filterStatus === 'all' && (
+                                        <button
+                                            onClick={() => navigate('/dashboard')}
+                                            className="btn btn-primary inline-flex items-center gap-2"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                            </svg>
+                                            Go to Dashboard
+                                        </button>
+                                    )}
                                 </td>
                             </tr>
                         ) : (

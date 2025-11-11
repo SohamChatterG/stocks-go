@@ -86,9 +86,7 @@ const LivePricesTable: React.FC<LivePricesTableProps> = ({ onStockClick }) => {
                     <div
                         key={stock.symbol}
                         onClick={() => onStockClick(stock.symbol)}
-                        // onMouseEnter={() => setHoveredStock(stock.symbol)}
-                        // onMouseLeave={() => setHoveredStock(null)}
-                        className="relative bg-white dark:bg-slate-800 border-2 border-gray-200 dark:border-slate-700 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-lg"
+                        className="stock-card"
                     >
                         {/* Stock Info */}
                         <div className="flex items-start gap-3 mb-3">

@@ -71,6 +71,8 @@ type OrderRequest struct {
 
 // Signup handles user registration
 func (h *Handlers) Signup(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Signup request received from %s", r.RemoteAddr)
+
 	var req SignupRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		w.Header().Set("Content-Type", "application/json")
@@ -86,13 +88,24 @@ func (h *Handlers) Signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create account with initial credits
-	account := h.storage.CreateAccount(req.Username)
+	log.Printf("Signup: Attempting to create account for %s", req.Username)
+
+	// Create account with password
+	account := h.storage.CreateAccount(req.Username, req.Password)
+	if account == nil {
+		log.Printf("Signup: Account already exists for %s", req.Username)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusConflict)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Username already exists"})
+		return
+	}
+
+	log.Printf("Signup: Account created successfully for %s", req.Username)
 
 	// Generate JWT token
 	token, err := auth.GenerateToken(req.Username)
 	if err != nil {
-		log.Printf("Error generating token: %v", err)
+		log.Printf("Signup: Error generating token: %v", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{"error": "Error generating token"})
@@ -108,12 +121,13 @@ func (h *Handlers) Signup(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(response)
+	log.Printf("Signup: User %s registered successfully", req.Username)
 }
 
 // Login handles user authentication
 func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Login request received from %s", r.RemoteAddr)
-	
+
 	var req LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Printf("Login: Invalid request body: %v", err)
@@ -124,7 +138,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("Login: Username=%s", req.Username)
-	
+
 	if req.Username == "" || req.Password == "" {
 		log.Println("Login: Missing credentials")
 		w.Header().Set("Content-Type", "application/json")
@@ -133,14 +147,21 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get or create account
-	account := h.storage.GetAccount(req.Username)
-	if account == nil {
-		log.Printf("Login: Account not found, creating new account for %s", req.Username)
-		account = h.storage.CreateAccount(req.Username)
-	} else {
-		log.Printf("Login: Found existing account for %s with %.2f credits", req.Username, account.Credits)
+	// Validate password
+	if !h.storage.ValidatePassword(req.Username, req.Password) {
+		log.Printf("Login: Invalid credentials for %s", req.Username)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Invalid username or password"})
+		return
 	}
+
+	log.Printf("Login: Password validated for %s", req.Username)
+
+	// Get account (we know it exists because ValidatePassword returned true)
+	account := h.storage.GetAccount(req.Username)
+
+	log.Printf("Login: Found account for %s with %.2f credits", req.Username, account.Credits)
 
 	// Generate JWT token
 	token, err := auth.GenerateToken(req.Username)
@@ -204,10 +225,13 @@ func (h *Handlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Ensure account exists (handles server restarts wiping in-memory store)
+	// Ensure account exists
 	if acc := h.storage.GetAccount(username); acc == nil {
-		log.Printf("CreateOrder: Auto-creating missing account for user=%s (likely server restart)", username)
-		h.storage.CreateAccount(username)
+		log.Printf("CreateOrder: Account not found for user=%s", username)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusNotFound)
+		_ = json.NewEncoder(w).Encode(map[string]string{"error": "Account not found. Please sign up first."})
+		return
 	}
 
 	var req OrderRequest

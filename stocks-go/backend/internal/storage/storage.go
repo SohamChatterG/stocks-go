@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"sync"
 	"time"
 )
@@ -30,10 +32,11 @@ type StockPrice struct {
 
 // UserAccount represents a user's trading account
 type UserAccount struct {
-	Username  string         `json:"username"`
-	Credits   float64        `json:"credits"`
-	Portfolio map[string]int `json:"portfolio"` // symbol -> quantity
-	mutex     sync.RWMutex
+	Username     string         `json:"username"`
+	PasswordHash string         `json:"-"` // Don't expose in JSON
+	Credits      float64        `json:"credits"`
+	Portfolio    map[string]int `json:"portfolio"` // symbol -> quantity
+	mutex        sync.RWMutex
 }
 
 // Storage provides thread-safe in-memory storage
@@ -104,19 +107,41 @@ func GetInstance() *Storage {
 	return instance
 }
 
+// hashPassword creates a SHA-256 hash of the password
+func hashPassword(password string) string {
+	hash := sha256.Sum256([]byte(password))
+	return hex.EncodeToString(hash[:])
+}
+
 // CreateAccount creates a new user account with initial credits
-func (s *Storage) CreateAccount(username string) *UserAccount {
+func (s *Storage) CreateAccount(username, password string) *UserAccount {
 	s.accountsMutex.Lock()
 	defer s.accountsMutex.Unlock()
 
-	if _, exists := s.accounts[username]; !exists {
-		s.accounts[username] = &UserAccount{
-			Username:  username,
-			Credits:   2000.0,
-			Portfolio: make(map[string]int),
-		}
+	if _, exists := s.accounts[username]; exists {
+		return nil // Account already exists
+	}
+
+	s.accounts[username] = &UserAccount{
+		Username:     username,
+		PasswordHash: hashPassword(password),
+		Credits:      2000.0,
+		Portfolio:    make(map[string]int),
 	}
 	return s.accounts[username]
+}
+
+// ValidatePassword checks if the provided password matches the stored hash
+func (s *Storage) ValidatePassword(username, password string) bool {
+	s.accountsMutex.RLock()
+	defer s.accountsMutex.RUnlock()
+
+	account, exists := s.accounts[username]
+	if !exists {
+		return false
+	}
+
+	return account.PasswordHash == hashPassword(password)
 }
 
 // GetAccount returns a user's account

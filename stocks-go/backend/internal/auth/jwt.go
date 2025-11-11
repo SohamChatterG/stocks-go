@@ -68,7 +68,7 @@ func ValidateToken(tokenString string) (*Claims, error) {
 func JWTMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("JWT Middleware: %s %s", r.Method, r.URL.Path)
-		
+
 		// Allow OPTIONS requests to pass through (for CORS preflight)
 		if r.Method == "OPTIONS" {
 			log.Println("JWT Middleware: OPTIONS request, passing through")
@@ -78,7 +78,7 @@ func JWTMiddleware(next http.Handler) http.Handler {
 
 		authHeader := r.Header.Get("Authorization")
 		log.Printf("JWT Middleware: Authorization header = %s", authHeader)
-		
+
 		if authHeader == "" {
 			log.Println("JWT Middleware: No authorization header")
 			w.Header().Set("Content-Type", "application/json")
@@ -99,7 +99,7 @@ func JWTMiddleware(next http.Handler) http.Handler {
 
 		tokenString := parts[1]
 		log.Printf("JWT Middleware: Validating token: %s...", tokenString[:min(20, len(tokenString))])
-		
+
 		claims, err := ValidateToken(tokenString)
 		if err != nil {
 			log.Printf("JWT Middleware: Token validation failed: %v", err)
@@ -110,7 +110,7 @@ func JWTMiddleware(next http.Handler) http.Handler {
 		}
 
 		log.Printf("JWT Middleware: Token valid for user: %s", claims.Username)
-		
+
 		// Add username to request context
 		ctx := context.WithValue(r.Context(), "username", claims.Username)
 		next.ServeHTTP(w, r.WithContext(ctx))
