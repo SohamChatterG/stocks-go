@@ -71,16 +71,16 @@ const LivePricesTable: React.FC<LivePricesTableProps> = ({ onStockClick }) => {
 
     if (prices.length === 0) {
         return (
-            <div className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-xl font-bold mb-4 text-gray-800">Live Stock Prices</h2>
-                <p className="text-gray-600">Loading...</p>
+            <div className="bg-white dark:bg-slate-900 rounded-lg shadow-md p-6">
+                <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Live Stock Prices</h2>
+                <p className="text-gray-600 dark:text-gray-300">Loading...</p>
             </div>
         );
     }
 
     return (
-        <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold mb-6 text-gray-800">Live Stock Prices</h2>
+        <div className="bg-white dark:bg-slate-900 rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-bold mb-6 text-gray-800 dark:text-gray-100">Live Stock Prices</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {prices.map((stock) => (
                     <div
@@ -88,7 +88,7 @@ const LivePricesTable: React.FC<LivePricesTableProps> = ({ onStockClick }) => {
                         onClick={() => onStockClick(stock.symbol)}
                         // onMouseEnter={() => setHoveredStock(stock.symbol)}
                         // onMouseLeave={() => setHoveredStock(null)}
-                        className="relative bg-white border-2 border-gray-200 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:border-blue-500 hover:shadow-lg"
+                        className="relative bg-white dark:bg-slate-800 border-2 border-gray-200 dark:border-slate-700 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-lg"
                     >
                         {/* Stock Info */}
                         <div className="flex items-start gap-3 mb-3">
@@ -101,18 +101,18 @@ const LivePricesTable: React.FC<LivePricesTableProps> = ({ onStockClick }) => {
                                 }}
                             />
                             <div className="flex-1 min-w-0">
-                                <div className="font-bold text-gray-900 text-lg">{stock.symbol}</div>
-                                <div className="text-xs text-gray-600 truncate">{stock.name}</div>
+                                <div className="font-bold text-gray-900 dark:text-gray-100 text-lg">{stock.symbol}</div>
+                                <div className="text-xs text-gray-600 dark:text-gray-400 truncate">{stock.name}</div>
                             </div>
                         </div>
 
                         {/* Price and Change */}
                         <div className="mb-3">
-                            <div className="text-2xl font-bold text-gray-900">
+                            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                                 ${stock.price.toFixed(2)}
                             </div>
                             <div
-                                className={`text-sm font-semibold ${stock.change >= 0 ? 'text-green-600' : 'text-red-600'
+                                className={`text-sm font-semibold ${stock.change >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                                     }`}
                             >
                                 {stock.change >= 0 ? '+' : ''}

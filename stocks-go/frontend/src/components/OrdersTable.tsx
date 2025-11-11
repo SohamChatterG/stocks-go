@@ -75,25 +75,16 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ refreshTrigger }) => {
     });
 
     return (
-        <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">Order History</h2>
-                <button
-                    onClick={fetchOrders}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
-                >
-                    Refresh
-                </button>
-            </div>
+        <div className="bg-white dark:bg-slate-900 rounded-lg shadow-md p-6">
 
             {/* Filters */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Stock</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Filter by Stock</label>
                     <select
                         value={filterSymbol}
                         onChange={(e) => setFilterSymbol(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                         <option value="all">All Stocks</option>
                         {symbols.map(symbol => (
@@ -102,11 +93,11 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ refreshTrigger }) => {
                     </select>
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Date</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Filter by Date</label>
                     <select
                         value={filterDate}
                         onChange={(e) => setFilterDate(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                         <option value="all">All Dates</option>
                         {dates.map(date => (
@@ -115,11 +106,11 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ refreshTrigger }) => {
                     </select>
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Status</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Filter by Status</label>
                     <select
                         value={filterStatus}
                         onChange={(e) => setFilterStatus(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                         <option value="all">All Status</option>
                         <option value="pending">Pending</option>
@@ -137,46 +128,46 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ refreshTrigger }) => {
             <div className="overflow-x-auto">
                 <table className="min-w-full">
                     <thead>
-                        <tr className="bg-gray-100">
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                        <tr className="bg-gray-100 dark:bg-slate-800">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                                 Stock
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                                 Side
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                                 Type
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                                 Quantity
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                                 Price
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                                 Status
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                                 Date
                             </th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-slate-800">
                         {loading ? (
                             <tr>
-                                <td colSpan={7} className="px-6 py-4 text-center text-gray-600">
+                                <td colSpan={7} className="px-6 py-4 text-center text-gray-600 dark:text-gray-300">
                                     Loading...
                                 </td>
                             </tr>
                         ) : filteredOrders.length === 0 ? (
                             <tr>
-                                <td colSpan={7} className="px-6 py-4 text-center text-gray-600">
+                                <td colSpan={7} className="px-6 py-4 text-center text-gray-600 dark:text-gray-300">
                                     No orders found
                                 </td>
                             </tr>
                         ) : (
                             filteredOrders.map((order) => (
-                                <tr key={order.id} className="hover:bg-gray-50">
+                                <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-slate-800">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center gap-3">
                                             {stocks[order.symbol] && (
@@ -189,7 +180,7 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ refreshTrigger }) => {
                                                     }}
                                                 />
                                             )}
-                                            <span className="font-semibold text-gray-800">{order.symbol}</span>
+                                            <span className="font-semibold text-gray-800 dark:text-gray-100">{order.symbol}</span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
@@ -204,17 +195,17 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ refreshTrigger }) => {
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span
                                             className={`px-3 py-1 rounded-full text-xs font-semibold uppercase ${order.orderType === 'market'
-                                                    ? 'bg-blue-100 text-blue-800 border border-blue-300'
-                                                    : 'bg-purple-100 text-purple-800 border border-purple-300'
+                                                ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                                                : 'bg-purple-100 text-purple-800 border border-purple-300'
                                                 }`}
                                         >
                                             {order.orderType || 'limit'}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                                    <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-100">
                                         {order.quantity}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                                    <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-100">
                                         ${order.price.toFixed(2)}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
@@ -222,7 +213,7 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ refreshTrigger }) => {
                                             {order.status}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                                         {new Date(order.createdAt).toLocaleString()}
                                     </td>
                                 </tr>
@@ -231,7 +222,7 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ refreshTrigger }) => {
                     </tbody>
                 </table>
                 {!loading && filteredOrders.length > 0 && (
-                    <div className="mt-4 text-sm text-gray-600 text-center">
+                    <div className="mt-4 text-sm text-gray-600 dark:text-gray-300 text-center">
                         Showing {filteredOrders.length} of {orders.length} orders
                     </div>
                 )}

@@ -10,10 +10,11 @@ import (
 	"stocks-backend/internal/websocket"
 	"time"
 
+	"strings"
+
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	ws "github.com/gorilla/websocket"
-    "strings"
 )
 
 var upgrader = ws.Upgrader{
@@ -111,15 +112,21 @@ func (h *Handlers) Signup(w http.ResponseWriter, r *http.Request) {
 
 // Login handles user authentication
 func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Login request received from %s", r.RemoteAddr)
+	
 	var req LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Printf("Login: Invalid request body: %v", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"error": "Invalid request body"})
 		return
 	}
 
+	log.Printf("Login: Username=%s", req.Username)
+	
 	if req.Username == "" || req.Password == "" {
+		log.Println("Login: Missing credentials")
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(map[string]string{"error": "Invalid credentials"})
@@ -129,18 +136,23 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 	// Get or create account
 	account := h.storage.GetAccount(req.Username)
 	if account == nil {
+		log.Printf("Login: Account not found, creating new account for %s", req.Username)
 		account = h.storage.CreateAccount(req.Username)
+	} else {
+		log.Printf("Login: Found existing account for %s with %.2f credits", req.Username, account.Credits)
 	}
 
 	// Generate JWT token
 	token, err := auth.GenerateToken(req.Username)
 	if err != nil {
-		log.Printf("Error generating token: %v", err)
+		log.Printf("Login: Error generating token: %v", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{"error": "Error generating token"})
 		return
 	}
+
+	log.Printf("Login: Token generated successfully for %s: %s...", req.Username, token[:min(20, len(token))])
 
 	response := LoginResponse{
 		Token:   token,
@@ -150,6 +162,14 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
+	log.Printf("Login: Response sent for %s", req.Username)
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 // GetPrices returns the current snapshot of all stock prices

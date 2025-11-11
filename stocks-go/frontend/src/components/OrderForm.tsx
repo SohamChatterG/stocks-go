@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from '../api/axios';
+import { useAuth } from '../context/AuthContext';
 
 interface OrderFormProps {
     onOrderCreated?: () => void;
@@ -14,6 +15,7 @@ interface OrderFormData {
 }
 
 const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated }) => {
+    const { updateCredits } = useAuth();
     const [formData, setFormData] = useState<OrderFormData>({
         symbol: 'AAPL',
         side: 'buy',
@@ -51,6 +53,16 @@ const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated }) => {
             await axios.post('/api/orders', payload);
             setMessage({ type: 'success', text: 'Order created successfully!' });
 
+            // Refresh credits from account after order
+            try {
+                const acc = await axios.get('/api/account');
+                if (typeof acc.data?.credits === 'number') {
+                    updateCredits(acc.data.credits);
+                }
+            } catch (e) {
+                console.warn('Failed to refresh account after order');
+            }
+
             // Reset form
             setFormData({
                 symbol: 'AAPL',
@@ -66,7 +78,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated }) => {
         } catch (err: any) {
             setMessage({
                 type: 'error',
-                text: err.response?.data || 'Failed to create order',
+                text: err.response?.data?.error || 'Failed to create order',
             });
         } finally {
             setLoading(false);

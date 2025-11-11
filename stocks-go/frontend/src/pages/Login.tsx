@@ -41,16 +41,16 @@ const Login: React.FC = () => {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600">
-            <div className="bg-white p-8 rounded-lg shadow-2xl w-96">
-                <h1 className="text-3xl font-bold text-center mb-2 text-gray-800">
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-lg shadow-2xl w-96">
+                <h1 className="text-3xl font-bold text-center mb-2 text-gray-800 dark:text-gray-100">
                     Trading Dashboard
                 </h1>
-                <p className="text-center text-gray-600 mb-6">
+                <p className="text-center text-gray-600 dark:text-gray-300 mb-6">
                     {isSignup ? 'Create your account' : 'Sign in to continue'}
                 </p>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             Username
                         </label>
                         <input
@@ -58,13 +58,13 @@ const Login: React.FC = () => {
                             id="username"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Enter username"
                             required
                         />
                     </div>
                     <div>
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             Password
                         </label>
                         <input
@@ -72,18 +72,18 @@ const Login: React.FC = () => {
                             id="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Enter password"
                             required
                         />
                     </div>
                     {error && (
-                        <div className="bg-red-50 text-red-600 px-3 py-2 rounded-md text-sm">
+                        <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-3 py-2 rounded-md text-sm">
                             {error}
                         </div>
                     )}
                     {isSignup && (
-                        <div className="bg-green-50 text-green-800 px-3 py-2 rounded-md text-sm">
+                        <div className="bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 px-3 py-2 rounded-md text-sm">
                             You'll receive $2,000 in credits to start trading!
                         </div>
                     )}
@@ -101,7 +101,7 @@ const Login: React.FC = () => {
                             setIsSignup(!isSignup);
                             setError('');
                         }}
-                        className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                        className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium"
                     >
                         {isSignup ? 'Already have an account? Login' : "Don't have an account? Sign Up"}
                     </button>
