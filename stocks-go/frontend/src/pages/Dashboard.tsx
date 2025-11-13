@@ -4,7 +4,6 @@ import { useAuth } from '../context/AuthContext';
 import LivePricesTable from '../components/LivePricesTable';
 import StockDetail from '../components/StockDetail';
 import { useTheme } from '../context/ThemeContext';
-import ThemeDebug from '../components/ThemeDebug';
 import NavButton from '../components/NavButton';
 
 const Dashboard: React.FC = () => {
@@ -83,9 +82,6 @@ const Dashboard: React.FC = () => {
                     onOrderCreated={handleOrderCreated}
                 />
             )}
-
-            {/* Temporary Debug Component - Remove after testing */}
-            <ThemeDebug />
         </div>
     );
 };

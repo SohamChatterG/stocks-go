@@ -173,7 +173,13 @@ const StockDetail: React.FC<StockDetailProps> = ({ symbol, onClose, onOrderCreat
                             <PriceChart
                                 data={stock.priceHistory || []}
                                 height={isMaximized ? 300 : 200}
-                                color={stock.change >= 0 ? '#16a34a' : '#dc2626'}
+                                color={
+                                    stock.priceHistory && stock.priceHistory.length > 0
+                                        ? stock.priceHistory[0] > stock.price
+                                            ? '#dc2626' // red - loss (first price was higher)
+                                            : '#16a34a' // green - gain (current price is higher or equal)
+                                        : '#3b82f6' // default blue
+                                }
                                 showGradient
                                 axes
                                 tooltip
